@@ -32,6 +32,21 @@ public record PersonDto : ContactBaseDto
     public DateTime? BirthDate { get; init; }
     public Gender Gender { get; init; }
     public Guid? EmployerId { get; init; }
+
+    public static implicit operator PersonDto(Person p) => new()
+    {
+        Id = p.Id,
+        FirstName = p.FirstName,
+        LastName = p.LastName,
+        Email = p.Email,
+        Phone = p.Phone,
+        Status = p.Status,
+        CreatedAt = p.CreatedAt,
+        Position = p.Position,
+        BirthDate = p.BirthDate,
+        Gender = p.Gender,
+        EmployerId = p.Employer?.Id
+    };
 }
 
 public record CreatePersonDto(
