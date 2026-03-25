@@ -5,8 +5,8 @@ namespace AppCore.Models;
 public class Address
 {
     public int id { get; set; }
-    public required string Street { get; set; }
-    public required string City { get; set; }
-    public required string ZipCode { get; set; }
-    public required Country Country { get; set; }
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string ZipCode { get; set; }
+    public Country Country { get; set; }
 }
