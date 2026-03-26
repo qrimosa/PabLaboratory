@@ -13,5 +13,7 @@ public class ContactsMappingProfile : Profile
         CreateMap<UpdatePersonDto, Person>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         CreateMap<Address, AddressDto>().ReverseMap();
+        CreateMap<Note, NoteDto>();
+        CreateMap<CreateNoteDto, Note>();
     }
 }

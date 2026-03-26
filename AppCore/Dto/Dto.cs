@@ -32,6 +32,7 @@ public record PersonDto : ContactBaseDto
     public DateTime? BirthDate { get; init; }
     public Gender Gender { get; init; }
     public Guid? EmployerId { get; init; }
+    public List<NoteDto> Notes { get; set; } = new();
 
     public static implicit operator PersonDto(Person p) => new()
     {
@@ -95,4 +96,18 @@ public record PagedResult<T>(
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
     public bool HasNext => Page < TotalPages;
     public bool HasPrevious => Page > 1;
+}
+
+// --- Note ---
+public class CreateNoteDto
+{
+    public string Content { get; set; } = string.Empty;
+}
+
+public class NoteDto
+{
+    public Guid Id { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public string? CreatedBy { get; set; } 
 }

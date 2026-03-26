@@ -10,9 +10,8 @@ public class Note : EntityBase
 {
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string CreatedBy { get; set; } = string.Empty;
+    public string? CreatedBy { get; set; }
 }
-
 public class Tag : EntityBase
 {
     public string Name { get; set; } = string.Empty;

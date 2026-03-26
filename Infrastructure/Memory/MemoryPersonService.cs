@@ -2,6 +2,7 @@ using AppCore.Dto;
 using AppCore.Interfaces;
 using AppCore.Models;
 using AutoMapper;
+using AppCore.Exceptions;
 
 namespace Infrastructure.Memory;
 
@@ -9,13 +10,10 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
 {
     public async Task<PagedResult<PersonDto>> FindAllPeoplePaged(int page, int size)
     {
-        // 1. Get paged entities from repository
         var result = await unitOfWork.Persons.FindPagedAsync(page, size);
         
-        // 2. Map the list of items
         var dtos = mapper.Map<List<PersonDto>>(result.Items);
         
-        // 3. Wrap in a new PagedResult of DTOs
         return new PagedResult<PersonDto>(dtos, result.TotalCount, result.Page, result.PageSize);
     }
 
@@ -38,7 +36,6 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         var entity = await unitOfWork.Persons.FindByIdAsync(id);
         if (entity == null) return null;
 
-        // Map DTO values onto the existing entity
         mapper.Map(dto, entity);
         
         await unitOfWork.Persons.UpdateAsync(entity);
@@ -53,13 +50,54 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         await unitOfWork.SaveChangesAsync();
     }
 
-    // Implementing this from your interface requirements
     public async IAsyncEnumerable<PersonDto> FindPeopleFromCompany(Guid companyId)
     {
         var people = await unitOfWork.Persons.GetEmployeesByCompanyAsync(companyId);
         foreach (var person in people)
         {
             yield return mapper.Map<PersonDto>(person);
+        }
+    }
+    
+    public async Task<PersonDto> GetPerson(Guid personId)
+    {
+        var entity = await unitOfWork.Persons.FindByIdAsync(personId);
+        if (entity == null) throw new ContactNotFoundException($"Person with id={personId} not found!");
+        return mapper.Map<PersonDto>(entity);
+    }
+
+    public async Task<Note> AddNoteToPerson(Guid personId, CreateNoteDto noteDto)
+    {
+        var entity = await unitOfWork.Persons.FindByIdAsync(personId);
+        if (entity == null) throw new ContactNotFoundException($"Person with id={personId} not found!");
+
+        entity.Notes ??= new List<Note>();
+
+        var note = new Note 
+        { 
+            Id = Guid.NewGuid(),
+            Content = noteDto.Content,
+            CreatedAt = DateTime.UtcNow 
+        };
+
+        entity.Notes.Add(note);
+        await unitOfWork.Persons.UpdateAsync(entity);
+        await unitOfWork.SaveChangesAsync();
+    
+        return note;
+    }
+
+    public async Task DeleteNoteFromPerson(Guid personId, Guid noteId)
+    {
+        var entity = await unitOfWork.Persons.FindByIdAsync(personId);
+        if (entity == null) throw new ContactNotFoundException($"Person with id={personId} not found!");
+
+        var note = entity.Notes?.FirstOrDefault(n => n.Id == noteId);
+        if (note != null)
+        {
+            entity.Notes!.Remove(note);
+            await unitOfWork.Persons.UpdateAsync(entity);
+            await unitOfWork.SaveChangesAsync();
         }
     }
 }

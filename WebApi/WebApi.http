@@ -50,3 +50,17 @@ Content-Type: application/json
   "phone": "123",
   "birthDate": "2025-01-01T00:00:00Z"
 }
+
+### Add Note to Person
+POST {{WebApi_HostAddress}}/api/contacts/{{PersonId}}/notes
+Content-Type: application/json
+
+{
+  "content": "Meeting scheduled for next Tuesday."
+}
+
+### Get Notes for Person
+GET {{WebApi_HostAddress}}/api/contacts/{{PersonId}}/notes
+
+### Delete Note
+DELETE {{WebApi_HostAddress}}/api/contacts/{{PersonId}}/notes/{{NoteId}}
