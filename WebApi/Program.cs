@@ -1,4 +1,5 @@
 using AppCore.Interfaces;
+using AppCore.Module;
 using Infrastructure.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IPersonRepository, MemoryPersonRepository>();
 builder.Services.AddSingleton<ICompanyRepository, MemoryCompanyRepository>();
 builder.Services.AddSingleton<IOrganizationRepository, MemoryOrganizationRepository>();
+// Program.cs
+builder.Services.AddContactsModule(builder.Configuration);
 
 // 2. Register Unit of Work (Coordination Layer)
 builder.Services.AddSingleton<IContactUnitOfWork, MemoryContactUnitOfWork>();

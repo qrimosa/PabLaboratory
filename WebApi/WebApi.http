@@ -1,6 +1,52 @@
-@WebApi_HostAddress = http://localhost:5125
+@WebApi_HostAddress = http://localhost:5148
 
-GET {{WebApi_HostAddress}}/weatherforecast/
+### 1. Get All Persons (Paginated)
+GET {{WebApi_HostAddress}}/api/contacts?page=1&size=10
 Accept: application/json
 
-###
+### 2. Create a New Person (Valid Request)
+POST {{WebApi_HostAddress}}/api/contacts
+Content-Type: application/json
+
+{
+  "firstName": "Jan",
+  "lastName": "Kowalski",
+  "email": "jan.kowalski@wsei.edu.pl",
+  "phone": "+48 500 600 700",
+  "birthDate": "1995-05-15T00:00:00Z",
+  "gender": 1,
+  "address": {
+    "street": "Krupnicza 10",
+    "city": "Krakow",
+    "postalCode": "31-123",
+    "country": "Poland",
+    "type": 1
+  }
+}
+
+### 3. Get Person by ID
+GET {{WebApi_HostAddress}}/api/contacts/a323d8f2-e978-4b5b-afda-5cc748c5bf12
+Accept: application/json
+
+### 4. Update an Existing Person
+PUT {{WebApi_HostAddress}}/api/contacts/a323d8f2-e978-4b5b-afda-5cc748c5bf12
+Content-Type: application/json
+
+{
+  "firstName": "Janusz",
+  "lastName": "Kowalski",
+  "email": "janusz.kowalski@wsei.edu.pl",
+  "status": 2
+}
+
+### 5. Test Validation Errors (Invalid Request)
+POST {{WebApi_HostAddress}}/api/contacts
+Content-Type: application/json
+
+{
+  "firstName": "",
+  "lastName": "N",
+  "email": "invalid-email",
+  "phone": "123",
+  "birthDate": "2025-01-01T00:00:00Z"
+}

@@ -20,7 +20,7 @@ public class MemoryPersonRepository : MemoryGenericRepository<Person>, IPersonRe
         => Task.FromResult(_data.Values.Where(p => p.Employer?.Id == companyId));
 
     public Task<IEnumerable<Person>> GetMembersByOrganizationAsync(Guid organizationId)
-        => throw new NotImplementedException("Implementation planned for home task.");
+        => Task.FromResult(_data.Values.Where(p => p.Organization?.Id == organizationId));
 }
 
 public class MemoryCompanyRepository : MemoryGenericRepository<Company>, ICompanyRepository
