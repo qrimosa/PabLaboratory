@@ -1,4 +1,4 @@
-using AppCore.Models; // Ensure this points to where your Enums (ContactStatus, etc.) are
+using AppCore.Models;
 using AppCore.Enums;
 
 namespace AppCore.Dto;
@@ -21,7 +21,10 @@ public record AddressDto(
     string PostalCode,
     string Country,
     AddressType Type
-);
+)
+{
+    public AddressDto() : this(string.Empty, string.Empty, string.Empty, string.Empty, default) { }
+}
 
 // --- Person ---
 public record PersonDto : ContactBaseDto

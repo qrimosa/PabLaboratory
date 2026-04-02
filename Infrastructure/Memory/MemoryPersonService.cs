@@ -8,19 +8,18 @@ namespace Infrastructure.Memory;
 
 public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) : IPersonService
 {
-    public async Task<PagedResult<PersonDto>> FindAllPeoplePaged(int page, int size)
-    {
-        var result = await unitOfWork.Persons.FindPagedAsync(page, size);
-        
-        var dtos = mapper.Map<List<PersonDto>>(result.Items);
-        
-        return new PagedResult<PersonDto>(dtos, result.TotalCount, result.Page, result.PageSize);
-    }
-
     public async Task<PersonDto?> FindById(Guid id)
     {
         var entity = await unitOfWork.Persons.FindByIdAsync(id);
-        return entity != null ? mapper.Map<PersonDto>(entity) : null;
+        return entity == null ? null : mapper.Map<PersonDto>(entity);
+    }
+
+    public async Task<PagedResult<PersonDto>> FindAllPeoplePaged(int page, int size)
+    {
+        var result = await unitOfWork.Persons.FindPagedAsync(page, size);
+        var dtos = mapper.Map<List<PersonDto>>(result.Items);
+        
+        return new PagedResult<PersonDto>(dtos, result.TotalCount, result.Page, result.PageSize);
     }
 
     public async Task<PersonDto> AddPerson(CreatePersonDto dto)
@@ -28,6 +27,7 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         var entity = mapper.Map<Person>(dto);
         await unitOfWork.Persons.AddAsync(entity);
         await unitOfWork.SaveChangesAsync();
+        
         return mapper.Map<PersonDto>(entity);
     }
 
@@ -50,20 +50,17 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async IAsyncEnumerable<PersonDto> FindPeopleFromCompany(Guid companyId)
+    public Task<IAsyncEnumerable<PersonDto>> FindPeopleFromCompany(Guid companyId)
     {
-        var people = await unitOfWork.Persons.GetEmployeesByCompanyAsync(companyId);
-        foreach (var person in people)
+        async IAsyncEnumerable<PersonDto> Stream()
         {
-            yield return mapper.Map<PersonDto>(person);
+            var people = await unitOfWork.Persons.GetEmployeesByCompanyAsync(companyId);
+            foreach (var person in people)
+            {
+                yield return mapper.Map<PersonDto>(person);
+            }
         }
-    }
-    
-    public async Task<PersonDto> GetPerson(Guid personId)
-    {
-        var entity = await unitOfWork.Persons.FindByIdAsync(personId);
-        if (entity == null) throw new ContactNotFoundException($"Person with id={personId} not found!");
-        return mapper.Map<PersonDto>(entity);
+        return Task.FromResult(Stream());
     }
 
     public async Task<Note> AddNoteToPerson(Guid personId, CreateNoteDto noteDto)
@@ -71,20 +68,28 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         var entity = await unitOfWork.Persons.FindByIdAsync(personId);
         if (entity == null) throw new ContactNotFoundException($"Person with id={personId} not found!");
 
+        var note = mapper.Map<Note>(noteDto);
+        note.Id = Guid.NewGuid();
+        note.CreatedAt = DateTime.UtcNow;
+
         entity.Notes ??= new List<Note>();
-
-        var note = new Note 
-        { 
-            Id = Guid.NewGuid(),
-            Content = noteDto.Content,
-            CreatedAt = DateTime.UtcNow 
-        };
-
         entity.Notes.Add(note);
+
         await unitOfWork.Persons.UpdateAsync(entity);
         await unitOfWork.SaveChangesAsync();
     
         return note;
+    }
+    public async Task<PersonDto> GetPerson(Guid id)
+    {
+        var person = await FindById(id);
+    
+        if (person == null)
+        {
+            throw new AppCore.Exceptions.ContactNotFoundException($"Person with id={id} not found!");
+        }
+    
+        return person;
     }
 
     public async Task DeleteNoteFromPerson(Guid personId, Guid noteId)
