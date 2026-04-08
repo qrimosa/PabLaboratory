@@ -18,6 +18,7 @@ public interface IPersonRepository : IGenericRepositoryAsync<Person>
 {
     Task<IEnumerable<Person>> GetEmployeesByCompanyAsync(Guid companyId);
     Task<IEnumerable<Person>> GetMembersByOrganizationAsync(Guid organizationId);
+    Task<Person?> FindByIdWithNotesAsync(Guid id);
 }
 
 public interface ICompanyRepository : IGenericRepositoryAsync<Company>

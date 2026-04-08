@@ -1,4 +1,5 @@
 using AppCore.Interfaces;
+using AppCore.Services;
 using Infrastructure.EntityFramework.Context;
 using Infrastructure.EntityFramework.Entities;
 using Infrastructure.EntityFramework.Repositories;
