@@ -1,5 +1,6 @@
 using AppCore.Models;
 using AppCore.Enums;
+using AppCore.ValueObjects;
 using Infrastructure.EntityFramework.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,6 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Temporary hardcoded path for migrations. 
-        // Update this to a path on your Mac, e.g., "Data Source=/Users/yourname/contacts.db"
         if (!optionsBuilder.IsConfigured)
         {
             optionsBuilder.UseSqlite("Data Source=contacts.db");
@@ -63,7 +62,6 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
             entity.Property(p => p.Gender).HasConversion<string>();
             entity.Property(p => p.Status).HasConversion<string>();
             
-            // Relationship: Person -> Company
             entity.HasOne(p => p.Employer)
                   .WithMany(e => e.Employees);
         });
@@ -72,12 +70,14 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
             .HasMany(o => o.Members)
             .WithOne(p => p.Organization);
 
-        // 3. Seed Data (Constant GUIDs)
+        // 3. Seed Data
         var companyId = Guid.Parse("516A34D7-CCFB-4F20-85F3-62BD0F3AF271");
         var personId1 = Guid.Parse("3d54091d-abc8-49ec-9590-93ad3ed5458f");
         var personId2 = Guid.Parse("B4DCB17C-F875-43F8-9D66-36597895A466");
+        var seedDate = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
-        builder.Entity<Company>().HasData(new Company
+        // Use Anonymous Object for Company to bypass Address constructor initialization
+        builder.Entity<Company>().HasData(new 
         {
             Id = companyId,
             Name = "WSEI",
@@ -85,6 +85,8 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
             Phone = "123567123",
             Email = "biuro@wsei.edu.pl",
             Website = "https://wsei.edu.pl",
+            Status = ContactStatus.Active,
+            CreatedAt = seedDate
         });
 
         builder.Entity<Person>().HasData(
@@ -99,8 +101,7 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
                 Phone = "123456789",
                 BirthDate = DateTime.Parse("2001-01-11"),
                 Position = "Programista",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = seedDate
             },
             new
             {
@@ -113,20 +114,42 @@ public class ContactsDbContext : IdentityDbContext<CrmUser, CrmRole, string>
                 Phone = "123123123",
                 BirthDate = DateTime.Parse("2001-01-11"),
                 Position = "Tester",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = seedDate
             }
         );
 
-        // Map Address as an Owned Type
-        builder.Entity<Contact>().OwnsOne(c => c.Address).HasData(new
-        {
-            ContactId = personId1, // Linked to Adam
-            City = "Kraków",
-            Country = "PL",
-            PostalCode = "25-009",
-            Street = "ul. Św. Filipa 17",
-            Type = AddressType.Correspondence
-        });
+        // Map Address as an Owned Type and seed with integer 'id'
+        builder.Entity<Contact>().OwnsOne(c => c.Address).HasData(
+            new
+            {
+                id = 1,
+                ContactId = personId1,
+                City = "Kraków",
+                Country = Country.PL,
+                ZipCode = "25-009",
+                Street = "ul. Św. Filipa 17",
+                Type = AddressType.Correspondence
+            },
+            new
+            {
+                id = 2,
+                ContactId = companyId,
+                City = "Kraków",
+                Country = Country.PL,
+                ZipCode = "31-150",
+                Street = "ul. św. Filipa 17",
+                Type = AddressType.Delivery
+            },
+            new
+            {
+                id = 3,
+                ContactId = personId2,
+                City = "Kraków",
+                Country = Country.PL,
+                ZipCode = "31-150",
+                Street = "ul. św. Filipa 17",
+                Type = AddressType.Correspondence
+            }
+        );
     }
 }

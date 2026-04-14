@@ -1,10 +1,12 @@
 @WebApi_HostAddress = http://localhost:5125
+@ContactId = 18cdbb55-8adf-415e-8452-a0d04535ca21
+@NoteId = 84070af9-9798-4c6f-9c8d-54f57348e135
 
 ### 1. Get All Persons (Paginated)
 GET {{WebApi_HostAddress}}/api/contacts?page=1&size=10
 Accept: application/json
 
-### 2. Create a New Person (Valid Request)
+### 2. Create a New Person
 POST {{WebApi_HostAddress}}/api/contacts
 Content-Type: application/json
 
@@ -25,11 +27,11 @@ Content-Type: application/json
 }
 
 ### 3. Get Person by ID
-GET {{WebApi_HostAddress}}/api/contacts/31514f83-f336-49a5-9e59-beb571a16ee5
+GET {{WebApi_HostAddress}}/api/contacts/{{ContactId}}
 Accept: application/json
 
 ### 4. Update an Existing Person
-PUT {{WebApi_HostAddress}}/api/contacts/31514f83-f336-49a5-9e59-beb571a16ee5
+PUT {{WebApi_HostAddress}}/api/contacts/{{ContactId}}
 Content-Type: application/json
 
 {
@@ -39,28 +41,19 @@ Content-Type: application/json
   "status": 2
 }
 
-### 5. Test Validation Errors (Invalid Request)
-POST {{WebApi_HostAddress}}/api/contacts
-Content-Type: application/json
-
-{
-  "firstName": "",
-  "lastName": "N",
-  "email": "invalid-email",
-  "phone": "123",
-  "birthDate": "2025-01-01T00:00:00Z"
-}
-
-### Add Note to Person
-POST {{WebApi_HostAddress}}/api/contacts/31514f83-f336-49a5-9e59-beb571a16ee5/notes
+### 5. Add Note to Person
+POST {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes
 Content-Type: application/json
 
 {
   "content": "Meeting scheduled for next Tuesday."
 }
 
-### Get Notes for Person
-GET {{WebApi_HostAddress}}/api/contacts/31514f83-f336-49a5-9e59-beb571a16ee5/notes
+### 6. Get Notes for Person
+GET {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes
 
-### Delete Note
-DELETE {{WebApi_HostAddress}}/api/contacts/31514f83-f336-49a5-9e59-beb571a16ee5/notes/84070af9-9798-4c6f-9c8d-54f57348e135
+### 7. Delete a Note
+DELETE {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes/{{NoteId}}
+
+### 8. Delete a Person
+DELETE {{WebApi_HostAddress}}/api/contacts/{{ContactId}}

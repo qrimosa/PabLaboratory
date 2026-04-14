@@ -50,17 +50,13 @@ public class MemoryPersonService(IContactUnitOfWork unitOfWork, IMapper mapper) 
         await unitOfWork.SaveChangesAsync();
     }
 
-    public Task<IAsyncEnumerable<PersonDto>> FindPeopleFromCompany(Guid companyId)
+    public async Task<IEnumerable<PersonDto>> FindPeopleFromCompany(Guid companyId)
     {
-        async IAsyncEnumerable<PersonDto> Stream()
-        {
-            var people = await unitOfWork.Persons.GetEmployeesByCompanyAsync(companyId);
-            foreach (var person in people)
-            {
-                yield return mapper.Map<PersonDto>(person);
-            }
-        }
-        return Task.FromResult(Stream());
+        var people = await unitOfWork.Persons.GetEmployeesByCompanyAsync(companyId);
+    
+        var dtos = mapper.Map<IEnumerable<PersonDto>>(people);
+    
+        return dtos;
     }
 
     public async Task<Note> AddNoteToPerson(Guid personId, CreateNoteDto noteDto)

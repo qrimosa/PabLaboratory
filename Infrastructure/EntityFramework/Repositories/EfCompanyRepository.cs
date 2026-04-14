@@ -10,7 +10,7 @@ public class EfCompanyRepository(ContactsDbContext context)
 {
     public async Task<Company?> FindByNipAsync(string nip)
     {
-        return await context.Companies.FirstOrDefaultAsync(c => c.Nip == nip);
+        return await context.Companies.FirstOrDefaultAsync(c => c.NIP == nip);
     }
 
     public async Task<IEnumerable<Company>> FindByNameAsync(string name)

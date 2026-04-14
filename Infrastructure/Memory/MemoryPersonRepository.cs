@@ -8,7 +8,6 @@ public class MemoryPersonRepository : MemoryGenericRepository<Person>, IPersonRe
 {
     public MemoryPersonRepository()
     {
-        // Sample data for testing
         var id1 = Guid.NewGuid();
         _data.Add(id1, new Person { Id = id1, FirstName = "Adam", LastName = "Nowak", Gender = Gender.Male, Status = ContactStatus.Active });
         
@@ -21,6 +20,11 @@ public class MemoryPersonRepository : MemoryGenericRepository<Person>, IPersonRe
 
     public Task<IEnumerable<Person>> GetMembersByOrganizationAsync(Guid organizationId)
         => Task.FromResult(_data.Values.Where(p => p.Organization?.Id == organizationId));
+    
+    public Task<Person?> FindByIdWithNotesAsync(Guid id)
+    {
+        return Task.FromResult(_data.GetValueOrDefault(id));
+    }
 }
 
 public class MemoryCompanyRepository : MemoryGenericRepository<Company>, ICompanyRepository

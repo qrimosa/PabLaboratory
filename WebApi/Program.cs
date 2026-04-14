@@ -1,22 +1,24 @@
 using AppCore.Interfaces;
 using AppCore.Module;
+using Infrastructure;
 using Infrastructure.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Register Repositories (Data Layer)
 // We use Singleton because the data is stored in Dictionary fields within these classes.
-builder.Services.AddSingleton<IPersonRepository, MemoryPersonRepository>();
-builder.Services.AddSingleton<ICompanyRepository, MemoryCompanyRepository>();
-builder.Services.AddSingleton<IOrganizationRepository, MemoryOrganizationRepository>();
+builder.Services.AddContactsEfModule(builder.Configuration);
+// builder.Services.AddSingleton<IPersonRepository, MemoryPersonRepository>();
+//builder.Services.AddSingleton<ICompanyRepository, MemoryCompanyRepository>();
+//builder.Services.AddSingleton<IOrganizationRepository, MemoryOrganizationRepository>();
 // Program.cs
 builder.Services.AddContactsModule(builder.Configuration);
 
 // 2. Register Unit of Work (Coordination Layer)
-builder.Services.AddSingleton<IContactUnitOfWork, MemoryContactUnitOfWork>();
+//builder.Services.AddSingleton<IContactUnitOfWork, MemoryContactUnitOfWork>();
 
 // 3. Register Application Services (Business Logic Layer)
-builder.Services.AddSingleton<IPersonService, MemoryPersonService>();
+//builder.Services.AddSingleton<IPersonService, MemoryPersonService>();
 
 // 4. Add Controllers support (needed for your ContactsController)
 builder.Services.AddControllers();

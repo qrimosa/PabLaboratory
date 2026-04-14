@@ -6,7 +6,7 @@ namespace AppCore.Interfaces;
 public interface IPersonService
 {
     Task<PagedResult<PersonDto>> FindAllPeoplePaged(int page, int size);
-    Task<IAsyncEnumerable<PersonDto>> FindPeopleFromCompany(Guid companyId);
+    Task<IEnumerable<PersonDto>> FindPeopleFromCompany(Guid companyId);
     Task<PersonDto> AddPerson(CreatePersonDto personDto);
     Task<PersonDto?> UpdatePerson(Guid id, UpdatePersonDto personDto);
     Task<PersonDto?> FindById(Guid id);
