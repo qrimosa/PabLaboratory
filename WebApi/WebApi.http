@@ -1,13 +1,32 @@
 @WebApi_HostAddress = http://localhost:5125
-@ContactId = e20b2f96-c3b9-447c-85b3-562553fcf0a1
-@NoteId = 84070af9-9798-4c6f-9c8d-54f57348e135
 
-### 1. Get All Persons (Paginated)
-GET {{WebApi_HostAddress}}/api/contacts?page=1&size=10
+### 1. LOGIN (Get the keys to the castle)
+# @name login
+POST {{WebApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@crm.pl",
+  "password": "Admin@123!"
+}
+
+### VARIABLE: Dynamic token extraction from the login response
+@authToken = {{login.response.body.accessToken}}
+
+### 2. GET ME (Check your current ID card)
+GET {{WebApi_HostAddress}}/api/auth/me
+Authorization: Bearer {{authToken}}
 Accept: application/json
 
-### 2. Create a New Person
+### 3. GET ALL PERSONS (Requires ReadOnlyAccess)
+GET {{WebApi_HostAddress}}/api/contacts?page=1&size=10
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 4. CREATE A NEW PERSON
+# @name createPerson
 POST {{WebApi_HostAddress}}/api/contacts
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
@@ -26,34 +45,22 @@ Content-Type: application/json
   }
 }
 
-### 3. Get Person by ID
-GET {{WebApi_HostAddress}}/api/contacts/{{ContactId}}
+### VARIABLE: Extract ID from the newly created person
+@newContactId = {{createPerson.response.body.id}}
+
+### 5. ADD NOTE TO PERSON
+POST {{WebApi_HostAddress}}/api/contacts/{{newContactId}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "content": "Everything is working now!"
+}
+
+### 6. DELETE PERSON (Requires AdminOnly)
+DELETE {{WebApi_HostAddress}}/api/contacts/{{newContactId}}
+Authorization: Bearer {{authToken}}
+
+### 7. NEGATIVE TEST: Attempt access without token
+GET {{WebApi_HostAddress}}/api/contacts
 Accept: application/json
-
-### 4. Update an Existing Person
-PUT {{WebApi_HostAddress}}/api/contacts/{{ContactId}}
-Content-Type: application/json
-
-{
-  "firstName": "Janusz",
-  "lastName": "Kowalski",
-  "email": "janusz.kowalski@wsei.edu.pl",
-  "status": 2
-}
-
-### 5. Add Note to Person
-POST {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes
-Content-Type: application/json
-
-{
-  "content": "Meeting scheduled for next Tuesday."
-}
-
-### 6. Get Notes for Person
-GET {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes
-
-### 7. Delete a Note
-DELETE {{WebApi_HostAddress}}/api/contacts/{{ContactId}}/notes/{{NoteId}}
-
-### 8. Delete a Person
-DELETE {{WebApi_HostAddress}}/api/contacts/{{ContactId}}

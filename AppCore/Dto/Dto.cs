@@ -1,5 +1,6 @@
 using AppCore.Models;
 using AppCore.Enums;
+using AppCore.Interfaces;
 
 namespace AppCore.Dto;
 
@@ -120,6 +121,18 @@ public record LoginDto
 {
     public string Email { get; init; } = string.Empty;
     public string Password { get; init; } = string.Empty;
+}
+
+// --- User / Account ---
+public record UserDto
+{
+    public string Id { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string Department { get; init; } = string.Empty;
+    public SystemUserStatus Status { get; init; }
+    public IEnumerable<string> Roles { get; init; } = new List<string>();
 }
 	
 public record AuthResponseDto

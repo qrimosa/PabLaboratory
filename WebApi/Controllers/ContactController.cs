@@ -1,6 +1,8 @@
+using AppCore.Authorization;
 using AppCore.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using AppCore.Dto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers;
 
@@ -14,11 +16,13 @@ public class ContactsController(IPersonService service) : ControllerBase
 
     // 1. GET ALL (Paginated)
     [HttpGet]
+    [Authorize(Policy = nameof(CrmPolicies.ReadOnlyAccess))]
     public async Task<IActionResult> GetAll(int page = 1, int size = 10)
     {
         var result = await service.FindAllPeoplePaged(page, size);
         return Ok(result);
     }
+    
 
     // 2. GET BY ID (Crucial: Fetches the specific person you just created)
     [HttpGet("{contactId:guid}")]
@@ -59,6 +63,7 @@ public class ContactsController(IPersonService service) : ControllerBase
 
     // 5. DELETE PERSON
     [HttpDelete("{contactId:guid}")]
+    [Authorize(Policy = nameof(CrmPolicies.AdminOnly))]
     public async Task<IActionResult> Delete([FromRoute] Guid contactId)
     {
         await service.DeletePerson(contactId);
