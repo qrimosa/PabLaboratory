@@ -1,5 +1,5 @@
 @WebApi_HostAddress = http://localhost:5125
-@ContactId = 18cdbb55-8adf-415e-8452-a0d04535ca21
+@ContactId = e20b2f96-c3b9-447c-85b3-562553fcf0a1
 @NoteId = 84070af9-9798-4c6f-9c8d-54f57348e135
 
 ### 1. Get All Persons (Paginated)
@@ -11,7 +11,7 @@ POST {{WebApi_HostAddress}}/api/contacts
 Content-Type: application/json
 
 {
-  "firstName": "Jan",
+  "firstName": "Janusz",
   "lastName": "Kowalski",
   "email": "jan.kowalski@wsei.edu.pl",
   "phone": "+48 500 600 700",
