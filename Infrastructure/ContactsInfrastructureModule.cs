@@ -8,6 +8,7 @@ using Infrastructure.EntityFramework.UnitOfWork;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,11 +22,12 @@ public static class ContactsInfrastructureModule
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 1. Repositories
+        // 1. Repositories & Services
         services.AddScoped<IPersonRepository, EfPersonRepository>();
         services.AddScoped<ICompanyRepository, EfCompanyRepository>();
         services.AddScoped<IOrganizationRepository, EfOrganizationRepository>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPersonService, PersonService>();
 
         // 2. Unit of Work
         services.AddScoped<IContactUnitOfWork, EfContactsUnitOfWork>();
@@ -37,21 +39,27 @@ public static class ContactsInfrastructureModule
         // 4. Identity Setup
         services.AddIdentity<CrmUser, CrmRole>(options =>
             {
-                options.Password.RequiredLength = 8;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = true;
+                
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
             })
-            .AddEntityFrameworkStores<ContactsDbContext>();
-
-        // 5. The Service
-        services.AddScoped<IPersonService, PersonService>();
+            .AddEntityFrameworkStores<ContactsDbContext>()
+            .AddDefaultTokenProviders();
 
         return services;
     }
+
     public static IServiceCollection AddJwt(this IServiceCollection services, JwtSettings jwtOptions)
     {
+        // Explicitly capture values to prevent late-binding null issues
+        var issuer = jwtOptions.Issuer;
+        var audience = jwtOptions.Audience;
+        var signingKey = jwtOptions.GetSymmetricKey();
+
         services
             .AddAuthentication(options =>
             {
@@ -60,38 +68,46 @@ public static class ContactsInfrastructureModule
             })
             .AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = jwtOptions.GetSymmetricKey(),
-                    ClockSkew = TimeSpan.Zero
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = signingKey,
+                    ClockSkew = TimeSpan.FromMinutes(5)
+                };
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"JWT Auth Failed: {context.Exception.Message}");
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
         services.AddAuthorization(options =>
         {
-            // Admin Only
-            options.AddPolicy(CrmPolicies.AdminOnly.ToString(), policy =>
+            // Using nameof ensures these match your [Authorize(Policy = nameof(...))] attributes
+            
+            options.AddPolicy(nameof(CrmPolicies.AdminOnly), policy =>
                 policy.RequireRole("Administrator"));
 
-            // Sales Access (Admin, SalesManager, Salesperson)
-            options.AddPolicy(CrmPolicies.SalesAccess.ToString(), policy =>
+            options.AddPolicy(nameof(CrmPolicies.SalesAccess), policy =>
                 policy.RequireRole("Administrator", "SalesManager", "Salesperson"));
 
-            // Active User Policy
-            options.AddPolicy(CrmPolicies.ActiveUser.ToString(), policy =>
+            options.AddPolicy(nameof(CrmPolicies.ReadOnlyAccess), policy =>
+                policy.RequireRole("Administrator", "SalesManager", "Salesperson", "SupportAgent", "ReadOnly"));
+
+            options.AddPolicy(nameof(CrmPolicies.ActiveUser), policy =>
                 policy.RequireAuthenticatedUser()
                     .RequireClaim("status", "Active"));
-
-            // Default: Everyone authenticated
-            options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
         });
 
         return services;

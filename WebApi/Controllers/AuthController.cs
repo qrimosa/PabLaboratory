@@ -37,6 +37,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("me")]
+    [Authorize]
     public IActionResult Me()
     {
         var user = new UserDto
