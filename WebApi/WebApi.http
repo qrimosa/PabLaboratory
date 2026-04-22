@@ -1,4 +1,5 @@
 @WebApi_HostAddress = http://localhost:5125
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IkY1QkFERTE0LTZDQzgtNDJBMi05QTQ0LTk4NDJEQTJEOTI4MCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImFkbWluQGNybS5wbCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkFkYW0iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9zdXJuYW1lIjoiQWRtaW5pc3RyYXRvciIsImRlcGFydG1lbnQiOiJJVCIsImp0aSI6ImVlZTExYWU1LWJkOGYtNGU4OC1iNjZiLTc1YmFiY2Q2NjFhNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluaXN0cmF0b3IiLCJleHAiOjE3NzY4NDYxNTgsImlzcyI6IklkZWlzQ3JtQXBpIiwiYXVkIjoiQ3JtQ2xpZW50In0.8anSDzn_TQGgoeCDCoTU5pESUst9jzL5x-NhHm7OkXk
 
 ### 1. LOGIN (Get the keys to the castle)
 # @name login
@@ -11,7 +12,7 @@ Content-Type: application/json
 }
 
 ### VARIABLE: Dynamic token extraction from the login response
-@authToken = {{login.response.body.accessToken}}
+### @authToken = {{login.response.body.accessToken}}
 
 ### 2. GET ME (Check your current ID card)
 GET {{WebApi_HostAddress}}/api/auth/me
